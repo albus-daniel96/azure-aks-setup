@@ -1,0 +1,42 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+- stage: CI
+  jobs:
+  - job: Terraform_Tool_Installation
+    steps:
+    - task: TerraformInstaller@1
+      inputs:
+        terraformVersion: 'latest'
+
+  - job: terraform_commands
+    steps:
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'init'
+        backendServiceArm: '<Azure devOps Project Name>'
+        backendAzureRmResourceGroupName: '<Resource group of your storage account>'
+        backendAzureRmStorageAccountName: '<Name of the storage account>'
+        backendAzureRmContainerName: '<storage container name>'
+        backendAzureRmKey: 'terraform.tfstate' # Name of the file where Terraform state will be saved. 
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'plan'
+        environmentServiceNameAzureRM: '<Azure devOps Project Name>'
+    - task: TerraformTaskV4@4
+      inputs:
+        provider: 'azurerm'
+        command: 'apply'
+        commandOptions: '-auto-approve'
+        environmentServiceNameAzureRM: '<Azure devOps Project Name>'
